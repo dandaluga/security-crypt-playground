@@ -9,8 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 
-import java.security.SecureRandom;
-import java.util.stream.IntStream;
+import java.security.NoSuchAlgorithmException;
 
 @SpringBootApplication
 public class SecurityCryptoPlaygroundApplication implements CommandLineRunner {
@@ -29,21 +28,67 @@ public class SecurityCryptoPlaygroundApplication implements CommandLineRunner {
 //          characters decode to a 16-byte value for the salt. The remaining characters
 //          are cipher text to be compared for authentication.
 
+    private static final String SECRET = "mysecretmysecret";
+    private static final String SALT = "yoyoma1234";
+    private static final String PASSWORD = "12345678";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityCryptoPlaygroundApplication.class);
 
-	public static void main(String[] args) {
-		SpringApplication.run(SecurityCryptoPlaygroundApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(SecurityCryptoPlaygroundApplication.class, args);
+    }
 
     @Override
     public void run(String... strings) throws Exception {
         LOGGER.debug("The SecurityCryptoPlaygroundApplication has started!");
 
-        CharSequence password = "12345678";
-        bcryptEncode(password);
-        pbkdf2Encode(password);
+        //CharSequence password = "12345678";
 
+        LOGGER.debug("===========================================================================");
+        LOGGER.debug("AES Encryption");
+        executeAESEncryption();
+
+        LOGGER.debug("===========================================================================");
+        LOGGER.debug("AES Encryption (With Salt)");
+        executeAESEncryptionWithSalt();
+
+//        bcryptEncode(password);
+//        pbkdf2Encode(password);
+
+        LOGGER.debug("===========================================================================");
         LOGGER.debug("The SecurityCryptoPlaygroundApplication has ended!");
+    }
+
+    private void executeAESEncryption() {
+        String encryptedValue = AESEncryption.encrypt(PASSWORD, SECRET);
+        String decryptedValue = AESEncryption.decrypt(encryptedValue, SECRET);
+
+        LOGGER.debug("AESEncryption Encrypted value: " + encryptedValue);
+        LOGGER.debug("AESEncryption Decrypted value: " + decryptedValue);
+
+        if (PASSWORD.matches(decryptedValue)) {
+            LOGGER.debug("AESEncryption Encryption/Decryption Matches!!!");
+        } else {
+            LOGGER.debug("AESEncryption Encryption/Decryption DOES NOT Match!!!");
+        }
+    }
+
+    private void executeAESEncryptionWithSalt() throws NoSuchAlgorithmException {
+        // To make it a bit more secure, add a generated salt. Note that you would need to store this value
+        // in say a database if you need to decrypt the value.
+        String salt = AESEncryption.getGeneratedSalt();
+
+        String encryptedValue = AESEncryption.encrypt(PASSWORD, SECRET, salt);
+        String decryptedValue = AESEncryption.decrypt(encryptedValue, SECRET, salt);
+
+        LOGGER.debug("AESEncryption Encrypted value: " + encryptedValue);
+        LOGGER.debug("AESEncryption Decrypted value: " + decryptedValue);
+
+        if (PASSWORD.matches(decryptedValue)) {
+            LOGGER.debug("AESEncryption Encryption/Decryption Matches!!!");
+        } else {
+            LOGGER.debug("AESEncryption Encryption/Decryption DOES NOT Match!!!");
+        }
     }
 
     private void pbkdf2Encode(CharSequence password) {
