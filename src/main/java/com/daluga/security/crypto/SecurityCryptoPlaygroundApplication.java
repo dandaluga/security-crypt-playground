@@ -10,19 +10,22 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 
 import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
+import java.security.Security;
 
 @SpringBootApplication
 public class SecurityCryptoPlaygroundApplication implements CommandLineRunner {
 
 //    Stored in the database, a bcrypt "hash" might look something like this:
 //
+//      $2a$10$AYX4P5Ykua.JUdnAHp9RUOiVByaGZ6YGh8awMOX2QeFrDgatzgRpa
 //      $2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa
 //
 //    This is actually three fields, delimited by "$":
 //
 //      - 2a identifies the bcrypt algorithm version that was used.
-//      - 10 is the cost factor; 2 to the 10th iterations of the key derivation function
-//          are usedv(which is not enough, by the way. I'd recommend a cost of 12 or more.)
+//      - 10 is the cost factor (strength); 2 to the 10th iterations of the key derivation function
+//          are usedv (which is not enough, by the way. I'd recommend a cost of 12 or more.)
 //      - vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa is the salt and the
 //          cipher text, concatenated and encoded in a modified Base-64. The first 22
 //          characters decode to a 16-byte value for the salt. The remaining characters
@@ -42,7 +45,8 @@ public class SecurityCryptoPlaygroundApplication implements CommandLineRunner {
     public void run(String... strings) throws Exception {
         LOGGER.debug("The SecurityCryptoPlaygroundApplication has started!");
 
-        //CharSequence password = "12345678";
+        LOGGER.debug("===========================================================================");
+        getSecurityProviders();
 
         LOGGER.debug("===========================================================================");
         LOGGER.debug("AES Encryption");
@@ -52,7 +56,10 @@ public class SecurityCryptoPlaygroundApplication implements CommandLineRunner {
         LOGGER.debug("AES Encryption (With Salt)");
         executeAESEncryptionWithSalt();
 
-//        bcryptEncode(password);
+        LOGGER.debug("===========================================================================");
+        LOGGER.debug("Bcrypt Hash");
+        bcryptEncode(PASSWORD);
+
 //        pbkdf2Encode(password);
 
         LOGGER.debug("===========================================================================");
@@ -91,6 +98,44 @@ public class SecurityCryptoPlaygroundApplication implements CommandLineRunner {
         }
     }
 
+    private void getSecurityProviders() {
+        Provider[] providers = Security.getProviders();
+
+        for(Provider provider : providers){
+            LOGGER.debug("===========================================================================");
+            LOGGER.debug("Provider Name: " + provider.getName());
+            LOGGER.debug("Provider Info: " + provider.getInfo());
+            provider.getServices().forEach(service -> {
+                LOGGER.debug("Algorithm: " + service.getAlgorithm());
+            });
+        }
+    }
+    private void bcryptEncode(String password) {
+
+        String hashedPassword = generateBcryptPasswordHash(password);
+
+        boolean passwordMatch = isBcryptPasswordMatch(password, hashedPassword);
+        if (passwordMatch) {
+            LOGGER.debug("THEY MATCHED!!!");
+        } else {
+            LOGGER.debug("Something went wrong!!!");
+        }
+    }
+
+    private boolean isBcryptPasswordMatch(String password, String hashedPassword) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        return encoder.matches(password, hashedPassword);
+    }
+
+    private String generateBcryptPasswordHash(String password) {
+        // The higher the strength the more of a performance price.
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+        String hashedPassword = encoder.encode(password);
+        LOGGER.debug("Bcrypt Hashed Password: " + hashedPassword);
+        return hashedPassword;
+    }
+
     private void pbkdf2Encode(CharSequence password) {
 
         String hashedPassword = generatePbkdf2PasswordHash(password);
@@ -114,33 +159,5 @@ public class SecurityCryptoPlaygroundApplication implements CommandLineRunner {
         Pbkdf2PasswordEncoder encoder = new Pbkdf2PasswordEncoder();
 
         return encoder.matches(password, hashedPassword);
-    }
-
-    private void bcryptEncode(CharSequence password) {
-
-        String hashedPassword = generateBcryptPasswordHash(password);
-
-        boolean passwordMatch = isBcryptPasswordMatch(password, hashedPassword);
-        if (passwordMatch) {
-            LOGGER.debug("THEY MATCHED!!!");
-        } else {
-            LOGGER.debug("Something went wrong!!!");
-        }
-    }
-
-    private boolean isBcryptPasswordMatch(CharSequence password, String hashedPassword) {
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-
-        return encoder.matches(password, hashedPassword);
-    }
-
-    private String generateBcryptPasswordHash(CharSequence password) {
-        String salt = BCrypt.gensalt(10);
-        LOGGER.debug("Salt -> " + salt);
-        // The higher the strength the more of a performance price.
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
-        String hashedPassword = encoder.encode(password);
-        LOGGER.debug("Pass -> " + hashedPassword);
-        return hashedPassword;
     }
 }

@@ -18,6 +18,11 @@ import java.util.Base64;
 
 public class AESEncryption {
 
+    // ==============================================================================================================
+    // Use AES encryption if you have a need to securely encrypt and decrypt a value with a secret key. In this
+    // use case, the key needs to be kept secure since this will be needed to encrypt and decrypt the value.
+    // ==============================================================================================================
+
     // AESEncryption is a symmetrical block cipher with a 128-bit size, which equates to 16 bytes.
     private static final int INITIALIZATION_VECTOR_LENGTH_BYTES = 16;
     private static final String AES_TRANSFORMATION_MODE = "AES/CBC/PKCS5Padding";
@@ -101,6 +106,7 @@ public class AESEncryption {
 
     private static SecretKeySpec getSecretKeySpecWithSalt(String secret, String salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+        // TODO: What is an appropriate iteration count and key length?
         KeySpec spec = new PBEKeySpec(secret.toCharArray(), salt.getBytes(), 65536, 256);
         SecretKey tmp = factory.generateSecret(spec);
         return new SecretKeySpec(tmp.getEncoded(), ALGORITHM);
