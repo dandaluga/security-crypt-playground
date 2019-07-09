@@ -127,14 +127,19 @@ public class SecurityCryptoPlaygroundApplication implements CommandLineRunner {
         int r = 2;
         int p = 1;
 
-        String hashedPassword = argon2.hash(r, N, p, password);
-        LOGGER.debug("Argon2 Hashed Password: " + hashedPassword);
+        try {
+            String hashedPassword = argon2.hash(r, N, p, password.toCharArray());
+            LOGGER.debug("Argon2 Hashed Password: " + hashedPassword);
 
-        if (argon2.verify(hashedPassword, PASSWORD)) {
-            LOGGER.debug("THEY MATCHED!!!");
-        } else {
-            LOGGER.debug("Something went wrong!!!");
+            if (argon2.verify(hashedPassword, PASSWORD)) {
+                LOGGER.debug("THEY MATCHED!!!");
+            } else {
+                LOGGER.debug("Something went wrong!!!");
+            }
+        } finally {
+            argon2.wipeArray(password.toCharArray());
         }
+
     }
 
     private void scryptEncodeNative(String password) {
