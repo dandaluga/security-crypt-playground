@@ -5,6 +5,7 @@ import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,9 +14,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.security.crypto.scrypt.SCryptPasswordEncoder;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
-import java.security.Security;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.*;
+import java.util.Base64;
 
 @SpringBootApplication
 public class SecurityCryptoPlaygroundApplication implements CommandLineRunner {
@@ -40,6 +42,9 @@ public class SecurityCryptoPlaygroundApplication implements CommandLineRunner {
     private static final String PASSWORD = "12345678";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityCryptoPlaygroundApplication.class);
+
+    @Autowired
+    private RSAEncryption rsaEncryption;
 
     public static void main(String[] args) {
         SpringApplication.run(SecurityCryptoPlaygroundApplication.class, args);
@@ -83,6 +88,12 @@ public class SecurityCryptoPlaygroundApplication implements CommandLineRunner {
         LOGGER.debug("===========================================================================");
         LOGGER.debug("Argon2 Hash - Is this the best one?");
         argon2Encode(PASSWORD);
+
+        LOGGER.debug("===========================================================================");
+        LOGGER.debug("RSA - Using asymmetric public-private key pattern.");
+        //rsaEncryption.generateKeys();
+        String theValue = rsaEncryption.decrypt(rsaEncryption.encrypt("Daniel"));
+        LOGGER.debug("RSA The decrypted value: " + theValue);
 
         LOGGER.debug("===========================================================================");
         LOGGER.debug("The SecurityCryptoPlaygroundApplication has ended!");
