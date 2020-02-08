@@ -50,7 +50,7 @@ public class SecurityCryptoPlaygroundApplication implements CommandLineRunner {
 
         LOGGER.debug("===========================================================================");
         LOGGER.debug("AES Encryption (With Salt)");
-        executeAESEncryptionWithSalt();
+//        executeAESEncryptionWithSalt();
 
 //        bcryptEncode(password);
 //        pbkdf2Encode(password);
