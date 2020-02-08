@@ -31,6 +31,24 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.lambdaworks</groupId>
+			<artifactId>scrypt</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.62</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.mkammerer</groupId>
+			<artifactId>argon2-jvm</artifactId>
+			<version>2.5</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
